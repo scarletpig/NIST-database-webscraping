@@ -6,7 +6,9 @@ import re
 import matplotlib.pyplot as plt
 import warnings
 from pathlib import Path
-from pandas.core.common import SettingWithCopyWarning
+#from pandas.core.common import SettingWithCopyWarning
+from pandas.errors import SettingWithCopyWarning
+
 
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
@@ -40,7 +42,11 @@ class NIST_Line():
         html_data = soup.get_text()
         html_data = html_data.replace('"', "")
         data = io.StringIO(html_data)
-        self.data_frame = pd.read_csv(data, sep="\t").drop('Unnamed: 20', axis=1)
+        
+        self.data_frame = pd.read_csv(data, sep="\t")
+        self.data_frame=self.data_frame.loc[:,~self.data_frame.keys().astype(str).str.contains('Unnamed')]
+                        
+        #self.data_frame = pd.read_csv(data, sep="\t").drop('Unnamed: 20', axis=1) #sometimes the unnamed column is not the 20
 
     def clean_intensity(self):
         self.data_frame['intens'] = self.data_frame['intens'].apply(lambda item: re.sub('[^0-9]', '', str(item)))
